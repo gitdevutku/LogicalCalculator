@@ -62,7 +62,6 @@ public class Calculator extends JFrame {
         initializeRadixButtons();
         initializeLogicButtons();
         updateButtonsState();
-        updateDisplay();
         setVisible(true);
     }
 
@@ -171,21 +170,20 @@ public class Calculator extends JFrame {
 
     private void updateDisplay() {
         String expression = expressionLabel.getText();
-        String result;
+        String result = "0";
 
         if (!currentOperator.isEmpty() && !secondInput.isEmpty()) {
-            result = convertResultToCurrentRadix(longResult);
-            expression += " " + secondInput;
-        } else if (!firstInput.isEmpty()) {
-            result = convertResultToCurrentRadix(doubleResult);
-            expression += "=" + firstInput;
+            expression += (currentOperator.isEmpty() ? " " + firstInput : " " + currentOperator + " " + secondInput);
+            result = convertResultToCurrentRadix(radix.equals("Decimal") ? longResult : doubleResult);
         } else {
-            result = "0";
+            result = convertResultToCurrentRadix(radix.equals("Decimal") ? longResult : doubleResult);
+            expression += "=" + firstInput;
         }
-
         expressionLabel.setText(expression);
         textField.setText(result);
     }
+
+
 
     private void calculateResult() {
         if (currentOperator.isEmpty()) {
@@ -304,21 +302,34 @@ public class Calculator extends JFrame {
 
     private String convertResultToCurrentRadix(Number result) {
         if (resultRadix.equals("Binary")) {
-            int bitWidth = 4; // Adjust the bit width as needed
+            int bitWidth = 4;
             String binaryString = Long.toBinaryString(result.longValue());
 
-            // Ensure that the binary string has a length that is a multiple of 4
+
+            boolean isNegative = binaryString.startsWith("-");
+
+
+            if (isNegative) {
+                binaryString = calculateOnesComplement(binaryString.substring(1));
+            }
+
+
             while (binaryString.length() % bitWidth != 0) {
                 binaryString = "0" + binaryString;
             }
 
-            // Add a space before every group of 4 binary digits
+
             String formattedBinary = "";
             for (int i = 0; i < binaryString.length(); i++) {
                 if (i > 0 && i % bitWidth == 0) {
                     formattedBinary += " ";
                 }
                 formattedBinary += binaryString.charAt(i);
+            }
+
+
+            if (isNegative) {
+                formattedBinary = " " + formattedBinary;
             }
 
             return formattedBinary;
@@ -328,6 +339,17 @@ public class Calculator extends JFrame {
             return String.valueOf(result);
         }
     }
+
+    private String calculateOnesComplement(String binaryString) {
+        String onesComplement = "";
+
+        for (char bit : binaryString.toCharArray()) {
+            onesComplement += (bit == '0') ? '1' : '0';
+        }
+
+        return onesComplement;
+    }
+
 
 
 
@@ -354,7 +376,6 @@ public class Calculator extends JFrame {
             secondInput += " " + input + " ";
         }
         textField.setText(secondInput);
-        updateDisplay();
     }
     private void clear() {
         secondInput = "";
@@ -362,7 +383,10 @@ public class Calculator extends JFrame {
         firstInput = "";
         doubleResult = 0.0;
         longResult = 0L;
+        radix = "Decimal";  // Reset radix
+        resultRadix = "Decimal";  // Reset result radix
         expressionLabel.setText("");
+        updateButtonsState();
         updateDisplay();
     }
 
@@ -409,33 +433,70 @@ public class Calculator extends JFrame {
                         updateDisplay();
                         break;
                     }
-                    updateDisplay();
                     break;
                 case "AND":
+                    if (!currentOperator.isEmpty() && !secondInput.isEmpty()) {
+                    calculateResult();
+                    firstInput = convertResultToCurrentRadix(radix.equals("Decimal") ? longResult : doubleResult);
+                    secondInput = "";
+                    currentOperator = buttonLabel;
+                    updateDisplay();
+                    break;
+                }
                 case "OR":
+                    if (!currentOperator.isEmpty() && !secondInput.isEmpty()) {
+                        calculateResult();
+                        firstInput = convertResultToCurrentRadix(radix.equals("Decimal") ? longResult : doubleResult);
+                        secondInput = "";
+                        currentOperator = buttonLabel;
+                        updateDisplay();
+                        break;
+                    }
                 case "XOR":
+                    if (!currentOperator.isEmpty() && !secondInput.isEmpty()) {
+                        calculateResult();
+                        firstInput = convertResultToCurrentRadix(radix.equals("Decimal") ? longResult : doubleResult);
+                        secondInput = "";
+                        currentOperator = buttonLabel;
+                        updateDisplay();
+                        break;
+                    }
                 case "NOT":
+                    if (!currentOperator.isEmpty() && !secondInput.isEmpty()) {
+                        calculateResult();
+                        firstInput = convertResultToCurrentRadix(radix.equals("Decimal") ? longResult : doubleResult);
+                        secondInput = "";
+                        currentOperator = buttonLabel;
+                        updateDisplay();
+                        break;
+                    }
                 case "NAND":
+                    if (!currentOperator.isEmpty() && !secondInput.isEmpty()) {
+                        calculateResult();
+                        firstInput = convertResultToCurrentRadix(radix.equals("Decimal") ? longResult : doubleResult);
+                        secondInput = "";
+                        currentOperator = buttonLabel;
+                        updateDisplay();
+                        break;
+                    }
                 case "NOR":
                     if (!firstInput.isEmpty() && !secondInput.isEmpty()) {
                         calculateResult();
                         firstInput = convertResultToCurrentRadix(radix.equals("Decimal") ? longResult : doubleResult);
                         secondInput = "";
+                        currentOperator = buttonLabel;
+                        updateDisplay();
+                        break;
                     }
-                    currentOperator = buttonLabel;
-                    updateDisplay();
-                    break;
                 default:
                     if (buttonLabel.matches("[0-9A-F]") || buttonLabel.equals(".")) {
                         appendToSecondInput(buttonLabel);
-                        updateDisplay();
                     } else if (buttonLabel.equals("+/-")) {
                         if (secondInput.startsWith("-")) {
                             secondInput = secondInput.substring(1);
                         } else {
                             secondInput = "-" + secondInput;
                         }
-                        updateDisplay();
                     } else {
                         if (currentOperator.isEmpty()) {
                             firstInput = secondInput;
@@ -447,7 +508,6 @@ public class Calculator extends JFrame {
                             secondInput = "";
                             currentOperator = buttonLabel;
                         }
-                        updateDisplay();
                     }
                     break;
             }
