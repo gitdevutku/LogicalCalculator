@@ -57,5 +57,7 @@ Decimal Input:     Binary Output:
 ```
 ## Dependencies
 - Java Swing
+## Screenshot
+- ![image](https://github.com/gitdevutku/LogicalCalculator/assets/144778146/551f055d-c9da-41ed-8204-96357eb4e3b6)
 ## Author
 - [Utku Berki Baysal](https://github.com/gitdevutku/)
