@@ -2,6 +2,7 @@ import javax.swing.*;
 import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.math.BigInteger;
 
 public class Calculator extends JFrame {
 
@@ -13,7 +14,7 @@ public class Calculator extends JFrame {
     private String radix = "Decimal";
     private String resultRadix = "Decimal";
     private double doubleResult = 0.0; // Use double for floating-point operations
-    private long longResult = 0L; // Use long for logical operations
+    private long longResult = 0; // Use long for logical operations
     private JRadioButton decimalButton = new JRadioButton("Decimal");
     private JRadioButton binaryButton = new JRadioButton("Binary");
     private JRadioButton hexButton = new JRadioButton("Hexadecimal");
@@ -184,7 +185,6 @@ public class Calculator extends JFrame {
     }
 
 
-
     private void calculateResult() {
         if (currentOperator.isEmpty()) {
             textField.setText("Error: Incomplete expression");
@@ -197,9 +197,8 @@ public class Calculator extends JFrame {
         }
 
         if (radix.equals("Binary") || radix.equals("Hexadecimal")) {
-            // Convert inputs to decimal for calculation
-            firstInput = convertToDecimal(firstInput, radix);
-            secondInput = convertToDecimal(secondInput, radix);
+            firstInput = convertToDecimalFromAnyRadix(firstInput, radix);
+            secondInput = convertToDecimalFromAnyRadix(secondInput, radix);
         }
 
         double firstDoubleValue = Double.parseDouble(firstInput);
@@ -210,135 +209,163 @@ public class Calculator extends JFrame {
 
         String expression = firstInput + " " + currentOperator + " " + secondInput;
 
-        switch (currentOperator) {
-            case "+":
-                doubleResult = firstDoubleValue + secondDoubleValue;
-                longResult = firstLongValue + secondLongValue;
-                break;
-            case "-":
-                doubleResult = firstDoubleValue - secondDoubleValue;
-                longResult = firstLongValue - secondLongValue;
-                break;
-            case "*":
-                doubleResult = firstDoubleValue * secondDoubleValue;
-                longResult = firstLongValue * secondLongValue;
-                break;
-            case "/":
-                if (secondDoubleValue != 0.0) {
-                    doubleResult = firstDoubleValue / secondDoubleValue;
-                    longResult = firstLongValue / secondLongValue;
-                } else {
-                    textField.setText("Error: Division by zero");
+        if (("AND".equals(currentOperator) || "OR".equals(currentOperator) || "XOR".equals(currentOperator)
+                || "NOT".equals(currentOperator) || "NAND".equals(currentOperator) || "NOR".equals(currentOperator))
+                && firstInput.equals(secondInput)) {
+            // Handle special cases for logical operations when inputs are the same
+            switch (currentOperator) {
+                case "AND":
+                    longResult = firstLongValue; // Result is the same as the input
+                    break;
+                case "OR":
+                    longResult = firstLongValue; // Result is the same as the input
+                    break;
+                case "XOR":
+                    longResult = 0; // XOR result is 0 when inputs are the same
+                    break;
+                case "NOT":
+                    longResult = ~secondLongValue; // NOT negates the input
+                    break;
+                case "NAND":
+                    longResult = 0; // NAND result is 0 when inputs are the same
+                    break;
+                case "NOR":
+                    longResult = 0; // NOR result is 0 when inputs are the same
+                    break;
+            }
+        } else {
+            // Perform regular calculations for non-special cases
+            switch (currentOperator) {
+                case "+":
+                    doubleResult = firstDoubleValue + secondDoubleValue;
+                    longResult = firstLongValue + secondLongValue;
+                    break;
+                case "-":
+                    doubleResult = firstDoubleValue - secondDoubleValue;
+                    longResult = firstLongValue - secondLongValue;
+                    break;
+                case "*":
+                    doubleResult = firstDoubleValue * secondDoubleValue;
+                    longResult = firstLongValue * secondLongValue;
+                    break;
+                case "/":
+                    if (secondDoubleValue != 0.0) {
+                        doubleResult = firstDoubleValue / secondDoubleValue;
+                        longResult = firstLongValue / secondLongValue;
+                    } else {
+                        textField.setText("Error: Division by zero");
+                        return;
+                    }
+                    break;
+                case "%":
+                    doubleResult = firstDoubleValue / 100 * secondDoubleValue;
+                    longResult = firstLongValue / 100 * secondLongValue;
+                    break;
+                case "+/-":
+                    firstDoubleValue *= -1;
+                    secondDoubleValue *= -1;
+                    firstLongValue = (long) firstDoubleValue;
+                    secondLongValue = (long) secondDoubleValue;
+                    break;
+                case "<<":
+                    longResult = firstLongValue << secondLongValue;
+                    break;
+                case ">>":
+                    longResult = firstLongValue >> secondLongValue;
+                    break;
+                case "AND":
+                    longResult = firstLongValue & secondLongValue;
+                    break;
+                case "OR":
+                    longResult = firstLongValue | secondLongValue;
+                    break;
+                case "XOR":
+                    longResult = firstLongValue ^ secondLongValue;
+                    break;
+                case "NOT":
+                    longResult = ~secondLongValue;
+                    break;
+                case "NAND":
+                    longResult = ~(firstLongValue & secondLongValue);
+                    break;
+                case "NOR":
+                    longResult = ~(firstLongValue | secondLongValue);
+                    break;
+                default:
                     return;
-                }
-                break;
-            case "%":
-                doubleResult = firstDoubleValue / 100 * secondDoubleValue;
-                longResult = firstLongValue / 100 * secondLongValue;
-                break;
-            case "+/-":
-                firstDoubleValue *= -1;
-                secondDoubleValue *= -1;
-                firstLongValue = (long) firstDoubleValue;
-                secondLongValue = (long) secondDoubleValue;
-                break;
-            case "<<":
-                longResult = firstLongValue << secondLongValue;
-                break;
-            case ">>":
-                longResult = firstLongValue >> secondLongValue;
-                break;
-            case "AND":
-                longResult = firstLongValue & secondLongValue;
-                break;
-            case "OR":
-                longResult = firstLongValue | secondLongValue;
-                break;
-            case "XOR":
-                longResult = firstLongValue ^ secondLongValue;
-                break;
-            case "NOT":
-                longResult = ~secondLongValue;
-                break;
-            case "NAND":
-                longResult = ~(firstLongValue & secondLongValue);
-                break;
-            case "NOR":
-                longResult = ~(firstLongValue | secondLongValue);
-                break;
-            default:
-                return;
+            }
         }
 
         firstInput = convertResultToCurrentRadix(radix.equals("Decimal") ? longResult : doubleResult);
         secondInput = "";
         currentOperator = "";
         expressionLabel.setText(expression);
+        updateDisplay();
     }
 
-    private String convertToDecimal(String input, String sourceRadix) {
+
+    private String removeLeadingZeros (String input){
+            BigInteger bigInteger = new BigInteger(input);
+            return bigInteger.toString();
+        }
+    private String convertToDecimalFromAnyRadix(String input, String sourceRadix) {
         if (input.isEmpty()) {
             return "0";
         }
 
         // Remove spaces from the input
         input = input.replaceAll("\\s", "");
-
         if (sourceRadix.equals("Binary")) {
-            input = input.replaceFirst("^0+(?!$)", "");
+            // Ensure proper binary format and remove leading zeros
+            input = removeLeadingZeros(input);
             if (input.isEmpty()) {
                 return "0";
             }
-
+            // Convert binary to decimal
             return String.valueOf(Long.parseLong(input, 2));
         } else if (sourceRadix.equals("Hexadecimal")) {
+            // Convert hexadecimal to decimal
             return String.valueOf(Long.parseLong(input, 16));
         }
 
         return input;
     }
 
-
-
     private String convertResultToCurrentRadix(Number result) {
         if (resultRadix.equals("Binary")) {
-            int bitWidth = 4;
+            // Convert the result to binary
             String binaryString = Long.toBinaryString(result.longValue());
 
-
-            boolean isNegative = binaryString.startsWith("-");
-
-
-            if (isNegative) {
-                binaryString = calculateOnesComplement(binaryString.substring(1));
+            // Ensure binary result is not empty
+            if (binaryString.isEmpty()) {
+                return "0";
             }
 
+            // Calculate the number of leading zeros needed for grouping 4 bits
+            int leadingZeros = (4 - binaryString.length() % 4) % 4;
 
-            while (binaryString.length() % bitWidth != 0) {
-                binaryString = "0" + binaryString;
+            // Add leading zeros to ensure groups of 4 bits
+            binaryString = "0".repeat(leadingZeros) + binaryString;
+
+            // Adjust length to the nearest multiple of 4
+            int length = (binaryString.length() + 3) / 4 * 4;
+
+            // Insert a space every 4 bits
+            for (int i = 4; i < length; i += 5) {
+                binaryString = binaryString.substring(0, i) + " " + binaryString.substring(i);
             }
 
-
-            String formattedBinary = "";
-            for (int i = 0; i < binaryString.length(); i++) {
-                if (i > 0 && i % bitWidth == 0) {
-                    formattedBinary += " ";
-                }
-                formattedBinary += binaryString.charAt(i);
-            }
-
-
-            if (isNegative) {
-                formattedBinary = " " + formattedBinary;
-            }
-
-            return formattedBinary;
+            return binaryString;
         } else if (resultRadix.equals("Hexadecimal")) {
+            // Convert decimal to hexadecimal without formatting
             return Long.toHexString(result.longValue()).toUpperCase();
         } else {
+            // Convert decimal to decimal
             return String.valueOf(result);
         }
     }
+
+
 
     private String calculateOnesComplement(String binaryString) {
         String onesComplement = "";
@@ -349,13 +376,6 @@ public class Calculator extends JFrame {
 
         return onesComplement;
     }
-
-
-
-
-
-
-
 
     private void appendToSecondInput(String input) {
         if (secondInput.equals("0") && !input.equals(".")) {
@@ -382,12 +402,12 @@ public class Calculator extends JFrame {
         currentOperator = "";
         firstInput = "";
         doubleResult = 0.0;
-        longResult = 0L;
+        longResult = 0;
         radix = "Decimal";  // Reset radix
         resultRadix = "Decimal";  // Reset result radix
+        decimalButton.setSelected(true);
         expressionLabel.setText("");
         updateButtonsState();
-        updateDisplay();
     }
 
     public class ButtonClickListener implements ActionListener {
