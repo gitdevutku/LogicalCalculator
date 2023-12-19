@@ -5,17 +5,20 @@ import java.awt.event.ActionListener;
 import java.math.BigInteger;
 
 public class Calculator extends JFrame {
+    private static final String DECIMAL_RADIX = "Decimal";
+    private static final String BINARY_RADIX = "Binary";
+    private static final String HEX_RADIX = "Hexadecimal";
 
     private JTextField textField = new JTextField("0", 20);
     private JLabel expressionLabel = new JLabel("", SwingConstants.RIGHT);
     private String firstInput = "";
     private String secondInput = "";
     private String currentOperator = "";
-    private String radix = "Decimal";
-    private String resultRadix = "Decimal";
+    private String radix = DECIMAL_RADIX;
+    private String resultRadix = DECIMAL_RADIX;
     private double doubleResult = 0.0; // Use double for floating-point operations
     private long longResult = 0; // Use long for logical operations
-    private JRadioButton decimalButton = new JRadioButton("Decimal");
+    private JRadioButton decimalButton = new JRadioButton(DECIMAL_RADIX);
     private JRadioButton binaryButton = new JRadioButton("Binary");
     private JRadioButton hexButton = new JRadioButton("Hexadecimal");
     private final String[] buttonLabels = {
@@ -32,17 +35,25 @@ public class Calculator extends JFrame {
     private JPanel buttonPanel = new JPanel(new GridLayout(6, 6));
     private JPanel logicalPanel = new JPanel(new GridLayout(6, 1));
 
-    public Calculator() {
+    Calculator() {
         super("Calculator");
+        initalizeUI();
+        initializeButtons();
+        initializeRadixButtons();
+        initializeLogicButtons();
+        pack();
+        updateButtonsState();
+        updateDisplay();
+        setVisible(true);
+    }
+    private void initalizeUI(){
         setBackground(Color.gray);
         buttonPanel.setForeground(Color.black);
         buttonPanel.setBackground(Color.gray);
         logicalPanel.setForeground(Color.BLACK);
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         setLayout(new BorderLayout());
-
         setSize(400, 500);
-
         setLocationRelativeTo(null);
         expressionLabel.setVisible(true);
         expressionLabel.setFont(new Font("Arial", Font.BOLD, 16));
@@ -50,20 +61,13 @@ public class Calculator extends JFrame {
         expressionLabel.setOpaque(true);
         expressionLabel.setForeground(Color.BLACK);
         add(expressionLabel, BorderLayout.NORTH);
-
         textField.setHorizontalAlignment(JTextField.RIGHT);
         textField.setPreferredSize(new Dimension(200, 30));
-        textField.setBorder(BorderFactory.createLineBorder(Color.lightGray, 1));
+        textField.setBorder(BorderFactory.createLineBorder(Color.orange, 1));
         textField.setFont(new Font("Arial", Font.BOLD, 24));
         textField.setEditable(false);
         textField.setBackground(Color.ORANGE);
         add(textField, BorderLayout.CENTER);
-
-        initializeButtons();
-        initializeRadixButtons();
-        initializeLogicButtons();
-        updateButtonsState();
-        setVisible(true);
     }
 
     private void initializeButtons() {
@@ -77,7 +81,6 @@ public class Calculator extends JFrame {
             buttonPanel.add(button);
         }
         add(buttonPanel, BorderLayout.SOUTH);
-        pack();
     }
 
     private void initializeLogicButtons() {
@@ -89,8 +92,8 @@ public class Calculator extends JFrame {
             button.addActionListener(new ButtonClickListener());
             logicalPanel.add(button);
         }
+        logicalPanel.setBackground(Color.darkGray);
         add(logicalPanel, BorderLayout.WEST);
-        pack();
     }
 
     private void initializeRadixButtons() {
@@ -110,34 +113,32 @@ public class Calculator extends JFrame {
         radixGroup.add(binaryButton);
         radixGroup.add(hexButton);
         decimalButton.setSelected(true);
+        radixPanel.setBackground(Color.darkGray);
         decimalButton.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
-                radix = "Decimal";
+                radix = DECIMAL_RADIX;
                 updateButtonsState();
                 updateResultRadix();
                 updateDisplay();
-                pack();
             }
         });
         binaryButton.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
-                radix = "Binary";
+                radix = BINARY_RADIX;
                 updateButtonsState();
                 updateResultRadix();
                 updateDisplay();
-                pack();
             }
         });
         hexButton.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
-                radix = "Hexadecimal";
+                radix = HEX_RADIX;
                 updateButtonsState();
                 updateResultRadix();
                 updateDisplay();
-                pack();
             }
         });
     }
@@ -145,10 +146,9 @@ public class Calculator extends JFrame {
     private void updateResultRadix() {
         resultRadix = radix;
     }
-
     private void updateButtonsState() {
-        boolean isBinary = radix.equals("Binary");
-        boolean isHexadecimal = radix.equals("Hexadecimal");
+        boolean isBinary = radix.equals(BINARY_RADIX);
+        boolean isHexadecimal = radix.equals(HEX_RADIX);
 
         for (Component component : buttonPanel.getComponents()) {
             if (component instanceof JButton) {
@@ -175,9 +175,9 @@ public class Calculator extends JFrame {
 
         if (!currentOperator.isEmpty() && !secondInput.isEmpty()) {
             expression += (currentOperator.isEmpty() ? " " + firstInput : " " + currentOperator + " " + secondInput);
-            result = convertResultToCurrentRadix(radix.equals("Decimal") ? longResult : doubleResult);
+            result = convertResultToCurrentRadix(radix.equals(DECIMAL_RADIX) ? longResult : doubleResult);
         } else {
-            result = convertResultToCurrentRadix(radix.equals("Decimal") ? longResult : doubleResult);
+            result = convertResultToCurrentRadix(radix.equals(DECIMAL_RADIX) ? longResult : doubleResult);
             expression += "=" + firstInput;
         }
         expressionLabel.setText(expression);
@@ -196,7 +196,7 @@ public class Calculator extends JFrame {
             return;
         }
 
-        if (radix.equals("Binary") || radix.equals("Hexadecimal")) {
+        if (radix.equals(BINARY_RADIX) || radix.equals(HEX_RADIX)) {
             firstInput = convertToDecimalFromAnyRadix(firstInput, radix);
             secondInput = convertToDecimalFromAnyRadix(secondInput, radix);
         }
@@ -212,27 +212,7 @@ public class Calculator extends JFrame {
         if (("AND".equals(currentOperator) || "OR".equals(currentOperator) || "XOR".equals(currentOperator)
                 || "NOT".equals(currentOperator) || "NAND".equals(currentOperator) || "NOR".equals(currentOperator))
                 && firstInput.equals(secondInput)) {
-            // Handle special cases for logical operations when inputs are the same
-            switch (currentOperator) {
-                case "AND":
-                    longResult = firstLongValue; // Result is the same as the input
-                    break;
-                case "OR":
-                    longResult = firstLongValue; // Result is the same as the input
-                    break;
-                case "XOR":
-                    longResult = 0; // XOR result is 0 when inputs are the same
-                    break;
-                case "NOT":
-                    longResult = ~secondLongValue; // NOT negates the input
-                    break;
-                case "NAND":
-                    longResult = 0; // NAND result is 0 when inputs are the same
-                    break;
-                case "NOR":
-                    longResult = 0; // NOR result is 0 when inputs are the same
-                    break;
-            }
+            longResult = performLogicalOperation(firstLongValue, secondLongValue, currentOperator);
         } else {
             // Perform regular calculations for non-special cases
             switch (currentOperator) {
@@ -295,8 +275,7 @@ public class Calculator extends JFrame {
                     return;
             }
         }
-
-        firstInput = convertResultToCurrentRadix(radix.equals("Decimal") ? longResult : doubleResult);
+        firstInput = convertResultToCurrentRadix(radix.equals(DECIMAL_RADIX) ? longResult : doubleResult);
         secondInput = "";
         currentOperator = "";
         expressionLabel.setText(expression);
@@ -304,10 +283,11 @@ public class Calculator extends JFrame {
     }
 
 
-    private String removeLeadingZeros (String input){
-            BigInteger bigInteger = new BigInteger(input);
-            return bigInteger.toString();
-        }
+    private String removeLeadingZeros(String input) {
+        BigInteger bigInteger = new BigInteger(input);
+        return bigInteger.toString();
+    }
+
     private String convertToDecimalFromAnyRadix(String input, String sourceRadix) {
         if (input.isEmpty()) {
             return "0";
@@ -315,7 +295,7 @@ public class Calculator extends JFrame {
 
         // Remove spaces from the input
         input = input.replaceAll("\\s", "");
-        if (sourceRadix.equals("Binary")) {
+        if (sourceRadix.equals(BINARY_RADIX)) {
             // Ensure proper binary format and remove leading zeros
             input = removeLeadingZeros(input);
             if (input.isEmpty()) {
@@ -323,7 +303,7 @@ public class Calculator extends JFrame {
             }
             // Convert binary to decimal
             return String.valueOf(Long.parseLong(input, 2));
-        } else if (sourceRadix.equals("Hexadecimal")) {
+        } else if (sourceRadix.equals(HEX_RADIX)) {
             // Convert hexadecimal to decimal
             return String.valueOf(Long.parseLong(input, 16));
         }
@@ -332,7 +312,7 @@ public class Calculator extends JFrame {
     }
 
     private String convertResultToCurrentRadix(Number result) {
-        if (resultRadix.equals("Binary")) {
+        if (resultRadix.equals(BINARY_RADIX)) {
             // Convert the result to binary
             String binaryString = Long.toBinaryString(result.longValue());
 
@@ -356,7 +336,7 @@ public class Calculator extends JFrame {
             }
 
             return binaryString;
-        } else if (resultRadix.equals("Hexadecimal")) {
+        } else if (resultRadix.equals(HEX_RADIX)) {
             // Convert decimal to hexadecimal without formatting
             return Long.toHexString(result.longValue()).toUpperCase();
         } else {
@@ -364,7 +344,6 @@ public class Calculator extends JFrame {
             return String.valueOf(result);
         }
     }
-
 
 
     private String calculateOnesComplement(String binaryString) {
@@ -376,6 +355,26 @@ public class Calculator extends JFrame {
 
         return onesComplement;
     }
+
+    private long performLogicalOperation(long first, long second, String operation) {
+        switch (operation) {
+            case "AND":
+                return first & second;
+            case "OR":
+                return first | second;
+            case "XOR":
+                return first ^ second;
+            case "NOT":
+                return ~second;
+            case "NAND":
+                return ~(first & second);
+            case "NOR":
+                return ~(first | second);
+            default:
+                throw new IllegalArgumentException("Invalid logical operation: " + operation);
+        }
+    }
+
 
     private void appendToSecondInput(String input) {
         if (secondInput.equals("0") && !input.equals(".")) {
@@ -397,14 +396,15 @@ public class Calculator extends JFrame {
         }
         textField.setText(secondInput);
     }
+
     private void clear() {
         secondInput = "";
         currentOperator = "";
         firstInput = "";
         doubleResult = 0.0;
         longResult = 0;
-        radix = "Decimal";  // Reset radix
-        resultRadix = "Decimal";  // Reset result radix
+        radix = DECIMAL_RADIX;  // Reset radix
+        resultRadix = DECIMAL_RADIX;  // Reset result radix
         decimalButton.setSelected(true);
         expressionLabel.setText("");
         updateButtonsState();
@@ -447,7 +447,7 @@ public class Calculator extends JFrame {
                 case "=":
                     if (!currentOperator.isEmpty() && !secondInput.isEmpty()) {
                         calculateResult();
-                        firstInput = convertResultToCurrentRadix(radix.equals("Decimal") ? longResult : doubleResult);
+                        firstInput = convertResultToCurrentRadix(radix.equals(DECIMAL_RADIX) ? longResult : doubleResult);
                         secondInput = "";
                         currentOperator = buttonLabel;
                         updateDisplay();
@@ -455,54 +455,14 @@ public class Calculator extends JFrame {
                     }
                     break;
                 case "AND":
-                    if (!currentOperator.isEmpty() && !secondInput.isEmpty()) {
-                    calculateResult();
-                    firstInput = convertResultToCurrentRadix(radix.equals("Decimal") ? longResult : doubleResult);
-                    secondInput = "";
-                    currentOperator = buttonLabel;
-                    updateDisplay();
-                    break;
-                }
                 case "OR":
-                    if (!currentOperator.isEmpty() && !secondInput.isEmpty()) {
-                        calculateResult();
-                        firstInput = convertResultToCurrentRadix(radix.equals("Decimal") ? longResult : doubleResult);
-                        secondInput = "";
-                        currentOperator = buttonLabel;
-                        updateDisplay();
-                        break;
-                    }
                 case "XOR":
-                    if (!currentOperator.isEmpty() && !secondInput.isEmpty()) {
-                        calculateResult();
-                        firstInput = convertResultToCurrentRadix(radix.equals("Decimal") ? longResult : doubleResult);
-                        secondInput = "";
-                        currentOperator = buttonLabel;
-                        updateDisplay();
-                        break;
-                    }
                 case "NOT":
-                    if (!currentOperator.isEmpty() && !secondInput.isEmpty()) {
-                        calculateResult();
-                        firstInput = convertResultToCurrentRadix(radix.equals("Decimal") ? longResult : doubleResult);
-                        secondInput = "";
-                        currentOperator = buttonLabel;
-                        updateDisplay();
-                        break;
-                    }
                 case "NAND":
-                    if (!currentOperator.isEmpty() && !secondInput.isEmpty()) {
-                        calculateResult();
-                        firstInput = convertResultToCurrentRadix(radix.equals("Decimal") ? longResult : doubleResult);
-                        secondInput = "";
-                        currentOperator = buttonLabel;
-                        updateDisplay();
-                        break;
-                    }
                 case "NOR":
                     if (!firstInput.isEmpty() && !secondInput.isEmpty()) {
                         calculateResult();
-                        firstInput = convertResultToCurrentRadix(radix.equals("Decimal") ? longResult : doubleResult);
+                        firstInput = convertResultToCurrentRadix(radix.equals(DECIMAL_RADIX) ? longResult : doubleResult);
                         secondInput = "";
                         currentOperator = buttonLabel;
                         updateDisplay();
@@ -524,17 +484,13 @@ public class Calculator extends JFrame {
                             currentOperator = buttonLabel;
                         } else {
                             calculateResult();
-                            firstInput = convertResultToCurrentRadix(radix.equals("Decimal") ? longResult : doubleResult);
+                            firstInput = convertResultToCurrentRadix(radix.equals(DECIMAL_RADIX) ? longResult : doubleResult);
                             secondInput = "";
                             currentOperator = buttonLabel;
                         }
                     }
-                    break;
+                break;
             }
         }
-    }
-
-    public static void main(String[] args) {
-        new Calculator();
     }
 }
